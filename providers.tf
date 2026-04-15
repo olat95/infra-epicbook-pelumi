@@ -10,6 +10,7 @@ terraform {
     storage_account_name = "epicbooktfstatepelz"
     container_name       = "tfstate"
     key                  = "epicbook.terraform.tfstate"
+    use_azuread_auth     = true
   }
 }
 
