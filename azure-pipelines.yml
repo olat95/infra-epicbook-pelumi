@@ -21,7 +21,7 @@ stages:
       name: sshPublicKey
       displayName: 'Download SSH Public Key'
       inputs:
-        secureFile: 'id_rsa.pub'
+        secureFile: 'id_rsa_pub'
 
     - script: |
         mkdir -p ~/.ssh
