@@ -43,7 +43,7 @@ stages:
         workingDirectory: '$(TF_WORKING_DIR)'
         backendServiceArm: 'azure-rm-connection'
         backendAzureRmResourceGroupName: 'epicbook-tfstate-rg'
-        backendAzureRmStorageAccountName: 'epicbooktfstate'
+        backendAzureRmStorageAccountName: 'epicbooktfstatepelz'
         backendAzureRmContainerName: 'tfstate'
         backendAzureRmKey: 'epicbook.terraform.tfstate'
 
