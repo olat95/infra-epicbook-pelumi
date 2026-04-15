@@ -35,52 +35,57 @@ stages:
       inputs:
         terraformVersion: 'latest'
 
-    - task: TerraformTaskV4@4
+    - script: |
+        export ARM_CLIENT_ID=$(ARM_CLIENT_ID)
+        export ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)
+        export ARM_TENANT_ID=$(ARM_TENANT_ID)
+        export ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)
+        cd $(TF_WORKING_DIR)
+        terraform init \
+          -backend-config="resource_group_name=epicbook-tfstate-rg" \
+          -backend-config="storage_account_name=epicbooktfstatepelz" \
+          -backend-config="container_name=tfstate" \
+          -backend-config="key=epicbook.terraform.tfstate" \
+          -backend-config="use_azuread_auth=true" \
+          -backend-config="client_id=$(ARM_CLIENT_ID)" \
+          -backend-config="client_secret=$(ARM_CLIENT_SECRET)" \
+          -backend-config="tenant_id=$(ARM_TENANT_ID)" \
+          -backend-config="subscription_id=$(ARM_SUBSCRIPTION_ID)"
       displayName: 'Terraform Init'
-      inputs:
-        provider: 'azurerm'
-        command: 'init'
-        workingDirectory: '$(TF_WORKING_DIR)'
-        backendServiceArm: 'azure-rm-connection'
-        backendAzureRmResourceGroupName: 'epicbook-tfstate-rg'
-        backendAzureRmStorageAccountName: 'epicbooktfstatepelz'
-        backendAzureRmContainerName: 'tfstate'
-        backendAzureRmKey: 'epicbook.terraform.tfstate'
 
-    - task: TerraformTaskV4@4
+    - script: |
+        export ARM_CLIENT_ID=$(ARM_CLIENT_ID)
+        export ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)
+        export ARM_TENANT_ID=$(ARM_TENANT_ID)
+        export ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)
+        cd $(TF_WORKING_DIR)
+        terraform plan \
+          -var="subscription_id=$(ARM_SUBSCRIPTION_ID)" \
+          -var="client_id=$(ARM_CLIENT_ID)" \
+          -var="client_secret=$(ARM_CLIENT_SECRET)" \
+          -var="tenant_id=$(ARM_TENANT_ID)" \
+          -var="ssh_public_key=$(cat ~/.ssh/id_rsa.pub)"
       displayName: 'Terraform Plan'
-      inputs:
-        provider: 'azurerm'
-        command: 'plan'
-        workingDirectory: '$(TF_WORKING_DIR)'
-        environmentServiceNameAzureRM: 'azure-rm-connection'
-        commandOptions: >
-          -var="subscription_id=$(ARM_SUBSCRIPTION_ID)"
-          -var="client_id=$(ARM_CLIENT_ID)"
-          -var="client_secret=$(ARM_CLIENT_SECRET)"
-          -var="tenant_id=$(ARM_TENANT_ID)"
-          -var="ssh_public_key=$(cat ~/.ssh/id_rsa.pub)"
 
-    - task: TerraformTaskV4@4
-      displayName: 'Terraform Apply'
-      inputs:
-        provider: 'azurerm'
-        command: 'apply'
-        workingDirectory: '$(TF_WORKING_DIR)'
-        environmentServiceNameAzureRM: 'azure-rm-connection'
-        commandOptions: >
-          -auto-approve
-          -var="subscription_id=$(ARM_SUBSCRIPTION_ID)"
-          -var="client_id=$(ARM_CLIENT_ID)"
-          -var="client_secret=$(ARM_CLIENT_SECRET)"
-          -var="tenant_id=$(ARM_TENANT_ID)"
+    - script: |
+        export ARM_CLIENT_ID=$(ARM_CLIENT_ID)
+        export ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)
+        export ARM_TENANT_ID=$(ARM_TENANT_ID)
+        export ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)
+        cd $(TF_WORKING_DIR)
+        terraform apply -auto-approve \
+          -var="subscription_id=$(ARM_SUBSCRIPTION_ID)" \
+          -var="client_id=$(ARM_CLIENT_ID)" \
+          -var="client_secret=$(ARM_CLIENT_SECRET)" \
+          -var="tenant_id=$(ARM_TENANT_ID)" \
           -var="ssh_public_key=$(cat ~/.ssh/id_rsa.pub)"
+      displayName: 'Terraform Apply'
 
     - script: |
         cd $(TF_WORKING_DIR)
+        echo "App Public IP: $(terraform output -raw app_public_ip)"
+        echo "MySQL FQDN: $(terraform output -raw mysql_fqdn)"
         echo "##vso[task.setvariable variable=APP_PUBLIC_IP;isOutput=true]$(terraform output -raw app_public_ip)"
         echo "##vso[task.setvariable variable=MYSQL_FQDN;isOutput=true]$(terraform output -raw mysql_fqdn)"
-        echo "App IP: $(terraform output -raw app_public_ip)"
-        echo "MySQL FQDN: $(terraform output -raw mysql_fqdn)"
       displayName: 'Capture Terraform Outputs'
       name: tfoutputs
